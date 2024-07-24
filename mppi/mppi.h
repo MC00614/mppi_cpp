@@ -42,7 +42,7 @@ private:
     Eigen::MatrixXd U;
     // Discrete Time System
     std::function<VectorXdual2nd(VectorXdual2nd, VectorXdual2nd)> f;
-    std::vector<std::function<dual2nd(VectorXdual2nd, VectorXdual2nd)>> fs;
+    // std::vector<std::function<dual2nd(VectorXdual2nd, VectorXdual2nd)>> fs;
     // Stage Cost Function
     std::function<dual2nd(VectorXdual2nd, VectorXdual2nd)> q;
     // Terminal Cost Function
