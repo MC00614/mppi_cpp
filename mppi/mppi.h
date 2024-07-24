@@ -42,7 +42,6 @@ private:
     Eigen::MatrixXd U;
     // Discrete Time System
     std::function<VectorXdual2nd(VectorXdual2nd, VectorXdual2nd)> f;
-    // std::vector<std::function<dual2nd(VectorXdual2nd, VectorXdual2nd)>> fs;
     // Stage Cost Function
     std::function<dual2nd(VectorXdual2nd, VectorXdual2nd)> q;
     // Terminal Cost Function
@@ -72,7 +71,6 @@ MPPI::MPPI(ModelClass model) {
     this->U = model.U;
     
     this->f = model.f;
-    this->fs = model.fs;
     this->q = model.q;
     this->p = model.p;
 }
@@ -114,7 +112,7 @@ void MPPI::solve() {
         for (int j = 0; j < N; ++j) {
             Xi.col(j+1) = f(Xi.col(j), Ui.block(i * dim_u, j, dim_u, 1)).cast<double>();
             cost += q(Xi.col(j), Ui.block(i * dim_u, j, dim_u, 1));
-            if (is_blocked) {cost += collision_checker->getCost(Xi.col(j));}
+            if (is_blocked) {cost += collision_checker->getCostGrid(Xi.col(j));}
         }
         cost += p(Xi.col(N));
         costs(i) = static_cast<double>(cost.val);
@@ -143,7 +141,7 @@ void MPPI::solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U) {
         for (int j = 0; j < N; ++j) {
             Xi.col(j+1) = f(Xi.col(j), Ui.block(i * dim_u, j, dim_u, 1)).cast<double>();
             cost += q(Xi.col(j), Ui.block(i * dim_u, j, dim_u, 1));
-            if (is_blocked) {cost += collision_checker->getCost(Xi.col(j));}
+            if (is_blocked) {cost += collision_checker->getCostGrid(Xi.col(j));}
         }
         cost += p(Xi.col(N));
         costs(i) = static_cast<double>(cost.val);
