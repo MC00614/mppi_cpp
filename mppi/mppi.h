@@ -1,5 +1,7 @@
 #pragma once
 
+// #include "EigenRand/Core.h"
+
 // For align with IPDDP
 #include <autodiff/forward/dual.hpp>
 #include <autodiff/forward/dual/eigen.hpp>
@@ -20,7 +22,7 @@ public:
 
     void init(MPPIParam mppi_param);
     void setCollisionChecker(CollisionChecker *collision_checker);
-    void updateNoise();
+    virtual void updateNoise();
     void solve();
     void solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U);
     
@@ -30,7 +32,7 @@ public:
     Eigen::MatrixXd getResU();
     std::vector<double> getAllCost();
     
-private:
+protected:
     int N;
     int dim_x;
     int dim_u;
@@ -113,7 +115,7 @@ void MPPI::solve() {
         updateNoise();
         Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
-        
+
         Xi.col(0) = X.col(0);
         cost = 0.0;
         for (int j = 0; j < N; ++j) {
