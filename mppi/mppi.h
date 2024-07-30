@@ -134,9 +134,9 @@ void MPPI::solve() {
     }
     h(U);
 
-    for (int j = 0; j < N; ++j) {
-        X.col(j+1) = f(X.col(j), U.col(j)).cast<double>();
-    }
+    // for (int j = 0; j < N; ++j) {
+    //     X.col(j+1) = f(X.col(j), U.col(j)).cast<double>();
+    // }
 }
 
 void MPPI::solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U) {
