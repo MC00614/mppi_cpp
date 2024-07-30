@@ -1,6 +1,6 @@
 #pragma once
 
-// #include "EigenRand/Core.h"
+#include <EigenRand/EigenRand>
 
 // For align with IPDDP
 #include <autodiff/forward/dual.hpp>
@@ -52,6 +52,9 @@ protected:
     
     std::function<void(Eigen::Ref<Eigen::MatrixXd>)> h;
 
+    std::mt19937_64 urng{ 42 };
+    Eigen::Rand::NormalGen<double> norm_gen{0.0, 1.0};
+
     int Nu;
     double gamma_u;
     Eigen::MatrixXd sigma_u;
@@ -102,7 +105,7 @@ void MPPI::setCollisionChecker(CollisionChecker *collision_checker) {
 }
 
 void MPPI::updateNoise() {
-    noise = this->sigma_u * Eigen::MatrixXd::Random(dim_u, N);
+    noise = sigma_u * norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng);
 }
 
 void MPPI::solve() {
