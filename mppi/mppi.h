@@ -20,9 +20,10 @@ public:
 
     void init(MPPIParam mppi_param);
     void setCollisionChecker(CollisionChecker *collision_checker);
-    // void solve();
+    void updateNoise();
+    void solve();
     void solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U);
-
+    
     Eigen::MatrixXd getInitX();
     Eigen::MatrixXd getInitU();
     Eigen::MatrixXd getResX();
@@ -55,7 +56,8 @@ private:
 
     CollisionChecker *collision_checker;
 
-    // Eigen::MatrixXd Xi;
+    Eigen::MatrixXd noise;
+
     Eigen::MatrixXd Ui;
     Eigen::VectorXd costs;
     Eigen::VectorXd weights;
@@ -84,8 +86,8 @@ void MPPI::init(MPPIParam mppi_param) {
     this->gamma_u = mppi_param.gamma_u;
     this->sigma_u = mppi_param.sigma_u;
 
+    this->noise.resize(dim_u, N);
     this->Ui.resize(dim_u * Nu, N);
-
     this->costs.resize(Nu);
     this->weights.resize(Nu);
 
@@ -97,6 +99,10 @@ void MPPI::setCollisionChecker(CollisionChecker *collision_checker) {
     this->collision_checker = collision_checker;
 }
 
+void MPPI::updateNoise() {
+    noise = this->sigma_u * Eigen::MatrixXd::Random(dim_u, N);
+}
+
 void MPPI::solve() {
     Eigen::MatrixXd Xi(dim_x, N+1);
     dual2nd cost;
@@ -104,8 +110,10 @@ void MPPI::solve() {
     Ui = U.replicate(Nu, 1);
 
     for (int i = 0; i < Nu; ++i) {
-        Ui.middleRows(i * dim_u, dim_u) += (this->sigma_u * Eigen::MatrixXd::Random(dim_u, N));
+        updateNoise();
+        Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
+        
         Xi.col(0) = X.col(0);
         cost = 0.0;
         for (int j = 0; j < N; ++j) {
@@ -146,8 +154,10 @@ void MPPI::solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U) {
     Ui = U.replicate(Nu, 1);
 
     for (int i = 0; i < Nu; ++i) {
-        Ui.middleRows(i * dim_u, dim_u) += (this->sigma_u * Eigen::MatrixXd::Random(dim_u, N));
+        updateNoise();
+        Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
+
         Xi.col(0) = X.col(0);
         cost = 0.0;
         for (int j = 0; j < N; ++j) {
