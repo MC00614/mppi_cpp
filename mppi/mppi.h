@@ -23,7 +23,7 @@ public:
     void init(MPPIParam mppi_param);
     void setCollisionChecker(CollisionChecker *collision_checker);
     virtual void updateNoise();
-    void solve();
+    virtual void solve();
     void solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U);
     
     Eigen::MatrixXd getInitX();
