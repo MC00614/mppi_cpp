@@ -11,8 +11,11 @@ using namespace autodiff;
 #include "collision_checker.h"
 #include "model_base.h"
 
+#include <ctime>
 #include <vector>
 #include <iostream>
+
+#include <omp.h>
 
 class MPPI {
 public:
@@ -22,7 +25,7 @@ public:
 
     void init(MPPIParam mppi_param);
     void setCollisionChecker(CollisionChecker *collision_checker);
-    virtual void updateNoise();
+    virtual Eigen::MatrixXd getNoise();
     virtual void solve();
     void solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U);
     
@@ -52,7 +55,8 @@ protected:
     
     std::function<void(Eigen::Ref<Eigen::MatrixXd>)> h;
 
-    std::mt19937_64 urng{ 42 };
+    // std::mt19937_64 urng{static_cast<std::uint_fast64_t>(std::time(nullptr))};
+    std::mt19937_64 urng{1};
     Eigen::Rand::NormalGen<double> norm_gen{0.0, 1.0};
 
     int Nu;
@@ -104,23 +108,21 @@ void MPPI::setCollisionChecker(CollisionChecker *collision_checker) {
     this->collision_checker = collision_checker;
 }
 
-void MPPI::updateNoise() {
-    noise = sigma_u * norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng);
+Eigen::MatrixXd MPPI::getNoise() {
+    return sigma_u * norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng);
 }
 
 void MPPI::solve() {
-    Eigen::MatrixXd Xi(dim_x, N+1);
-    dual2nd cost;
-
     Ui = U.replicate(Nu, 1);
-
+    #pragma omp parallel for
     for (int i = 0; i < Nu; ++i) {
-        updateNoise();
+        Eigen::MatrixXd Xi(dim_x, N+1);
+        Eigen::MatrixXd noise = getNoise();
         Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
 
         Xi.col(0) = X.col(0);
-        cost = 0.0;
+        dual2nd cost = 0.0;
         for (int j = 0; j < N; ++j) {
             if (collision_checker->getCollisionGrid(Xi.col(j))) {
                 cost = 1e8;
@@ -159,7 +161,7 @@ void MPPI::solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U) {
     Ui = U.replicate(Nu, 1);
 
     for (int i = 0; i < Nu; ++i) {
-        updateNoise();
+        Eigen::MatrixXd noise = getNoise();
         Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
 

@@ -28,8 +28,9 @@ public:
         Vi = V.replicate(Nu, 1);
         Ui = U.replicate(Nu, 1);
 
+        #pragma omp parallel for
         for (int i = 0; i < Nu; ++i) {
-            updateNoise();
+            Eigen::MatrixXd noise = getNoise();
             Vi.middleRows(i * dim_u, dim_u) += noise;
             Ui.middleRows(i * dim_u, dim_u) += Vi.middleRows(i * dim_u, dim_u) * dt;
             h(Ui.middleRows(i * dim_u, dim_u));

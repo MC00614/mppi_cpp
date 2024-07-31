@@ -10,9 +10,9 @@ public:
 
     Eigen::Rand::LognormalGen<double> log_norm_gen{0.0, 1.0};
 
-    void updateNoise() override {
+    Eigen::MatrixXd getNoise() override {
         Eigen::MatrixXd log_distribution = log_norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng);
-        noise = (sigma_u * norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng)).array() * log_distribution.array();
+        return (sigma_u * norm_gen.template generate<Eigen::MatrixXd>(dim_u, N, urng)).array() * log_distribution.array();
     }
 };
 
