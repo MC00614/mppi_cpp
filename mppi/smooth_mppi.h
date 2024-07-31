@@ -20,11 +20,6 @@ public:
     Eigen::VectorXd u_diff;
 
     void solve() override {
-        Eigen::MatrixXd projected_Vi;
-
-        Eigen::MatrixXd Xi(dim_x, N+1);
-        double cost;
-
         Vi = V.replicate(Nu, 1);
         Ui = U.replicate(Nu, 1);
 
@@ -34,12 +29,13 @@ public:
             Vi.middleRows(i * dim_u, dim_u) += noise;
             Ui.middleRows(i * dim_u, dim_u) += Vi.middleRows(i * dim_u, dim_u) * dt;
             h(Ui.middleRows(i * dim_u, dim_u));
-            projected_Vi = (Ui.middleRows(i * dim_u, dim_u) - U) / dt;
+            Eigen::MatrixXd projected_Vi = (Ui.middleRows(i * dim_u, dim_u) - U) / dt;
             noise = projected_Vi - V;
             Vi.middleRows(i * dim_u, dim_u) = projected_Vi;
 
+            Eigen::MatrixXd Xi(dim_x, N+1);
             Xi.col(0) = X.col(0);
-            cost = 0.0;
+            double cost = 0.0;
             for (int j = 0; j < N; ++j) {
                 if (collision_checker->getCollisionGrid(Xi.col(j))) {
                     cost = 1e8;

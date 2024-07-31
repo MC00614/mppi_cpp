@@ -55,8 +55,8 @@ protected:
     
     std::function<void(Eigen::Ref<Eigen::MatrixXd>)> h;
 
-    // std::mt19937_64 urng{static_cast<std::uint_fast64_t>(std::time(nullptr))};
-    std::mt19937_64 urng{1};
+    std::mt19937_64 urng{static_cast<std::uint_fast64_t>(std::time(nullptr))};
+    // std::mt19937_64 urng{1};
     Eigen::Rand::NormalGen<double> norm_gen{0.0, 1.0};
 
     int Nu;
