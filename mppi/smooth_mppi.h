@@ -45,7 +45,7 @@ public:
                 Xi.col(j+1) = f(Xi.col(j), Ui.block(i * dim_u, j, dim_u, 1)).cast<double>();
 
                 if (j == 0) {continue;}
-                u_diff = Ui.block(i * dim_u, j, dim_u, 1) - Ui.block(i * dim_u, j - 1, dim_u, 1);
+                Eigen::VectorXd u_diff = Ui.block(i * dim_u, j, dim_u, 1) - Ui.block(i * dim_u, j - 1, dim_u, 1);
                 cost += u_diff.transpose() * w * u_diff;
                 if (j + 1 == N) {cost += static_cast<double>(p(Xi.col(N)).val);}
             }
