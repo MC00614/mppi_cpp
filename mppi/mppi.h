@@ -155,18 +155,17 @@ void MPPI::solve() {
 }
 
 void MPPI::solve(Eigen::MatrixXd &X, Eigen::MatrixXd &U) {
-    Eigen::MatrixXd Xi(dim_x, N + 1);
-    dual2nd cost;
-    
     Ui = U.replicate(Nu, 1);
 
+    #pragma omp parallel for
     for (int i = 0; i < Nu; ++i) {
+        Eigen::MatrixXd Xi(dim_x, N+1);
         Eigen::MatrixXd noise = getNoise();
         Ui.middleRows(i * dim_u, dim_u) += noise;
         h(Ui.middleRows(i * dim_u, dim_u));
 
         Xi.col(0) = X.col(0);
-        cost = 0.0;
+        dual2nd cost = 0.0;
         for (int j = 0; j < N; ++j) {
             if (collision_checker->getCollisionGrid(Xi.col(j))) {
                 cost = 1e8;
